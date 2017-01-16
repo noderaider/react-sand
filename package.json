@@ -1,0 +1,39 @@
+{
+  "name": "react-sand",
+  "version": "0.1.0",
+  "main": "lib/index.js",
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "scripts": {
+    "start": "npm run build -- --watch",
+    "prebuild": "rimraf lib dist",
+    "build:dist": "webpack",
+    "build": "babel src -d lib --ignore __tests__,__mocks__",
+    "preversion": "npm run build && npm run build:dist"
+  },
+  "dependencies": {
+    "classnames": "^2.2.5",
+    "babel-runtime": "latest"
+  },
+  "devDependencies": {
+    "babel-cli": "latest",
+    "babel-core": "^6.18.0",
+    "babel-eslint": "latest",
+    "babel-loader": "^6.2.7",
+    "babel-plugin-transform-runtime": "latest",
+    "babel-polyfill": "latest",
+    "babel-preset-latest": "^6.16.0",
+    "babel-preset-react": "^6.16.0",
+    "babel-preset-stage-2": "^6.16.0",
+    "bin-utils": "latest",
+    "eslint": "latest",
+    "eslint-plugin-babel": "latest",
+    "eslint-plugin-react": "latest",
+    "ncp": "latest",
+    "npm-run-all": "latest",
+    "rimraf": "latest",
+    "webpack": "^2.1.0-beta.25"
+  }
+}
