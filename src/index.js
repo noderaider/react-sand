@@ -1,37 +1,106 @@
 import invariant from 'invariant'
 
+function serializePropValue (propValue, propValueType) {
+  switch(propValueType) {
+    case 'object':
+      return JSON.stringify(propValue, null, 2)
+    case 'function':
+      return eval(propValue)
+    default:
+      return propValue
+  }
+}
+
+function deserializePropValue (propValue, propValueType) {
+  switch(propValueType) {
+    case 'object':
+      return JSON.parse(propValue)
+    default:
+      return propValue
+  }
+}
+
 export default function sand ({ React } = {}) {
   invariant(React, 'React is a required dependency of react-sand (hand to factory function).')
+  const { Component, PropTypes } = React
+
+  const Prop = ({ propName
+                , propValue
+                , onChange
+                , propValueType = typeof propValue
+                , serializedValue = serializePropValue(propValue, propValueType)
+                }) => {
+
+    return (
+      <label
+        style={
+          { display: 'flex'
+          , flexFlow: 'column nowrap'
+          }
+        }
+      >
+        {propName} &lt;{propValueType}&gt;
+        <textarea
+          onChange={(e) => {
+            try {
+              onChange(deserializePropValue(e.target.value, propValueType))
+            } catch(err) {
+            }
+          }}
+          defaultValue={serializedValue}
+        />
+      </label>
+    )
+  }
 
   return class Sand extends Component {
     constructor(props) {
       super(props)
       this.state = {}
     }
-    render({ Box, children, ...props }) {
-      if(Box.propTypes)
-        return <pre>{JSON.stringify(Object.keys(Box), null, 2)}</pre>
-        //return <span>Add propTypes to the component.</span>
+    render() {
+      const { Box, ...props } = this.props
+      const { displayName, propTypes, defaultProps } = Box
+      const mergedProps = { ...defaultProps, ...props }
+      if(!propTypes)
+        return <span>Add propTypes to the component.</span>
       return (
-        <div>
-          {Object.entries(Box.propTypes).map(([ propName, propType ], i) => {
-            return (
-              <label key={i} style={{ display: 'flex', flexFlow: 'column nowrap' }}>
-                {propName}:
-                <input
-                  type="number"
-                  onChange={(e) => {
-                    try {
-                      this.setState({ [propName]: parseInt(e.target.value) }, () => console.info(`${propName} UPDATED`))
-                    } catch(err) {}
-                  }}
-                />
-              </label>
-            )
-          })}
-          <Box {...props}>
-            {children}
-          </Box>
+        <div
+          style={
+            { display: 'flex'
+            , flexFlow: 'column nowrap'
+            }
+          }
+        >
+          <h4>{displayName} Props</h4>
+          <div
+            style={
+              { display: 'flex'
+              , flexFlow: 'column nowrap'
+              , fontSize: '0.9em'
+              }
+            }
+          >
+            {Object.keys(propTypes).map((propName, i) => (
+              <Prop
+                key={i}
+                propName={propName}
+                propValue={mergedProps[propName]}
+                onChange={
+                  (value) => this.setState({ [propName]: value }, () => console.info(`${propName} updated!`))
+                }
+              />
+            ))}
+          </div>
+          <div
+            style={
+              { display: 'flex'
+              }
+            }
+          >
+            <h4>Children Type: {typeof mergedProps.children === 'function' ? 'Render Callback' : 'Standard'}</h4>
+          </div>
+          <Box {...props} />
         </div>
       )
     }
